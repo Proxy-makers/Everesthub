@@ -120,9 +120,38 @@ local Window = Rayfield:CreateWindow({
     end,
  })
  
- Rayfield:Notify({
-    Title = "Script loading",
-    Content = "loading",
-    Duration = 6.5,
-    Image = nil,
+ local Button = Tab:CreateButton({
+    Name = "Noclip (E)",
+    Callback = function()
+    -- Made by Everestvrgt
+local noclipEnabled = false
+
+local function toggleNoclip()
+    local player = LocalPlayer() 
+
+    if not IsValid(player) then return end 
+
+    noclipEnabled = not noclipEnabled 
+
+    if noclipEnabled then
+        player:SetMoveType(MOVETYPE_NOCLIP) 
+        player:ChatPrint("Noclip enabled") 
+        player:SetMoveType(MOVETYPE_WALK) 
+        player:ChatPrint("Noclip disabled") 
+    end
+end
+
+
+hook.Add("Think", "CheckNoclipToggle", function()
+    if input.IsKeyDown(KEY_E) then 
+        if not toggleCooldown or toggleCooldown < CurTime() then
+            toggleNoclip()
+            toggleCooldown = CurTime() + 0.5 
+        end
+    end
+end)
+
+    end,
  })
+
+ 
