@@ -39,7 +39,84 @@ local Window = Rayfield:CreateWindow({
  local Button = Tab:CreateButton({
     Name = "Fly",
     Callback = function()
-    
+        local main = Instance.new("ScreenGui")
+        local onof = Instance.new("TextButton")
+        main.Name = "main"
+        main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        
+        onof.Name = "onof"
+        onof.Parent = main
+        onof.BackgroundColor3 = Color3.fromRGB(255, 249, 74)
+        onof.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
+        onof.Size = UDim2.new(0, 56, 0, 28)
+        onof.Font = Enum.Font.SourceSans
+        onof.Text = "Fly"
+        onof.TextColor3 = Color3.fromRGB(0, 0, 0)
+        onof.TextSize = 14.000
+        
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local flying, speed = false, 50
+        local upVelocity, forwardVelocity, rightVelocity = 0, 0, 0
+        local bodyGyro, bodyVelocity
+        
+        onof.MouseButton1Down:Connect(function()
+            flying = not flying
+            if flying then
+                bodyGyro = Instance.new("BodyGyro", character.PrimaryPart)
+                bodyGyro.P, bodyGyro.maxTorque = 9e4, Vector3.new(9e9, 9e9, 9e9)
+                bodyGyro.cframe = character.PrimaryPart.CFrame
+                bodyVelocity = Instance.new("BodyVelocity", character.PrimaryPart)
+                bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+                humanoid.PlatformStand = true
+            else
+                bodyGyro:Destroy()
+                bodyVelocity:Destroy()
+                humanoid.PlatformStand = false
+            end
+        end)
+        
+        -- Handle movement
+        local userInput = game:GetService("UserInputService")
+        local move = {E = speed, Space = speed, Q = -speed, W = speed, S = -speed, A = -speed, D = speed}
+        
+        userInput.InputBegan:Connect(function(input)
+            if flying then
+                local key = input.KeyCode.Name
+                if move[key] then
+                    if key == "E" or key == "Space" then
+                        upVelocity = move[key]
+                    elseif key == "Q" then
+                        upVelocity = move[key]
+                    elseif key == "W" or key == "S" then
+                        forwardVelocity = move[key]
+                    elseif key == "A" or key == "D" then
+                        rightVelocity = move[key]
+                    end
+                end
+            end
+        end)
+        
+        userInput.InputEnded:Connect(function(input)
+            if flying then
+                local key = input.KeyCode.Name
+                if key == "E" or key == "Space" then upVelocity = 0
+                elseif key == "Q" then upVelocity = 0
+                elseif key == "W" or key == "S" then forwardVelocity = 0
+                elseif key == "A" or key == "D" then rightVelocity = 0 end
+            end
+        end)
+        
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if flying and character.PrimaryPart then
+                bodyGyro.cframe = workspace.CurrentCamera.CFrame
+                bodyVelocity.velocity = workspace.CurrentCamera.CFrame.LookVector * forwardVelocity
+                    + workspace.CurrentCamera.CFrame.RightVector * rightVelocity + Vector3.new(0, upVelocity, 0)
+            end
+        end)
+        
     end,
  })
  
