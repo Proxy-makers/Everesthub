@@ -1,7 +1,7 @@
 -- [ Made By EverestVRGT ] --
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-    Name = "",
+    Name = "Murder Mystery 2",
     Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
     LoadingTitle = "Murder Mystery 2",
     LoadingSubtitle = "by Everestvrgt",
@@ -34,123 +34,509 @@ local Window = Rayfield:CreateWindow({
     }
  })
 
- local Tab = Window:CreateTab("Main", nil) -- Title, Image
+ local MainTab = Window:CreateTab("Player", nil) -- Title, Image
 
  local Button = Tab:CreateButton({
-    Name = "Fly",
+    Name = "Button Example",
     Callback = function()
-    -- Press X to fly
+    -- Variables
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local canJumpInfinite = false
 
-local plr = game.Players.LocalPlayer
-local mouse = plr:GetMouse()
-
-localplayer = plr
-
-if workspace:FindFirstChild("Core") then
-    workspace.Core:Destroy()
+-- Function to toggle infinite jump
+local function toggleInfiniteJump()
+    canJumpInfinite = not canJumpInfinite
+    if canJumpInfinite then
+        print("Infinite Jump Enabled!")
+    else
+        print("Infinite Jump Disabled!")
+    end
 end
 
-local Core = Instance.new("Part")
-Core.Name = "Core"
-Core.Size = Vector3.new(0.05, 0.05, 0.05)
-
-spawn(function()
-    Core.Parent = workspace
-    local Weld = Instance.new("Weld", Core)
-    Weld.Part0 = Core
-    Weld.Part1 = localplayer.Character.LowerTorso
-    Weld.C0 = CFrame.new(0, 0, 0)
-end)
-
-workspace:WaitForChild("Core")
-
-local torso = workspace.Core
-flying = true
-local speed=10
-local keys={a=false,d=false,w=false,s=false}
-local e1
-local e2
-local function start()
-    local pos = Instance.new("BodyPosition",torso)
-    local gyro = Instance.new("BodyGyro",torso)
-    pos.Name="EPIXPOS"
-    pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
-    pos.position = torso.Position
-    gyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-    gyro.cframe = torso.CFrame
-    repeat
-        wait()
-        localplayer.Character.Humanoid.PlatformStand=true
-        local new=gyro.cframe - gyro.cframe.p + pos.position
-        if not keys.w and not keys.s and not keys.a and not keys.d then
-            speed=5
-        end
-        if keys.w then
-            new = new + workspace.CurrentCamera.CoordinateFrame.lookVector * speed
-            speed=speed+0
-        end
-        if keys.s then
-            new = new - workspace.CurrentCamera.CoordinateFrame.lookVector * speed
-            speed=speed+0
-        end
-        if keys.d then
-            new = new * CFrame.new(speed,0,0)
-            speed=speed+0
-        end
-        if keys.a then
-            new = new * CFrame.new(-speed,0,0)
-            speed=speed+0
-        end
-        if speed>10 then
-            speed=5
-        end
-        pos.position=new.p
-        if keys.w then
-            gyro.cframe = workspace.CurrentCamera.CoordinateFrame*CFrame.Angles(-math.rad(speed*0),0,0)
-        elseif keys.s then
-            gyro.cframe = workspace.CurrentCamera.CoordinateFrame*CFrame.Angles(math.rad(speed*0),0,0)
-        else
-            gyro.cframe = workspace.CurrentCamera.CoordinateFrame
-        end
-    until flying == false
-    if gyro then gyro:Destroy() end
-    if pos then pos:Destroy() end
-    flying=false
-    localplayer.Character.Humanoid.PlatformStand=false
-    speed=10
+-- Infinite Jump Function
+local function onJumpRequest(humanoid)
+    if canJumpInfinite and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
 end
-e1=mouse.KeyDown:connect(function(key)
-    if not torso or not torso.Parent then flying=false e1:disconnect() e2:disconnect() return end
-    if key=="w" then
-        keys.w=true
-    elseif key=="s" then
-        keys.s=true
-    elseif key=="a" then
-        keys.a=true
-    elseif key=="d" then
-        keys.d=true
-    elseif key=="x" then
-        if flying==true then
-            flying=false
-        else
-            flying=true
-            start()
-        end
+
+-- Function to setup infinite jump for the player's character
+local function setupInfiniteJump(character)
+    local humanoid = character:WaitForChild("Humanoid")
+
+    -- Connect the Jump Request to the function
+    UserInputService.JumpRequest:Connect(function()
+        onJumpRequest(humanoid)
+    end)
+end
+
+-- Key press function
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.T then
+        toggleInfiniteJump()
     end
 end)
-e2=mouse.KeyUp:connect(function(key)
-    if key=="w" then
-        keys.w=false
-    elseif key=="s" then
-        keys.s=false
-    elseif key=="a" then
-        keys.a=false
-    elseif key=="d" then
-        keys.d=false
-    end
+
+-- Listen for character added events
+player.CharacterAdded:Connect(function(character)
+    setupInfiniteJump(character)
 end)
-start()
-end)
+
+-- Initial setup for the current character
+if player.Character then
+    setupInfiniteJump(player.Character)
+end
+
     end,
  })
- 
+
+ local Button = MainTab:CreateButton({
+    Name = "Noclip (N)",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local mouse = player:GetMouse()
+        local noclip = false
+        local runService = game:GetService("RunService")
+        
+        -- Toggles noclip
+        mouse.KeyDown:Connect(function(key)
+            if key == "n" then -- Press 'N' to toggle noclip
+                noclip = not noclip
+            end
+        end)
+        
+        -- Function to handle noclip
+        runService.Stepped:Connect(function()
+            if noclip then
+                local character = player.Character
+                if character then
+                    for _, part in pairs(character:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end
+        end)
+        
+    end,
+ })
+
+ local Toggle = MainTab:CreateToggle({
+    Name = "Fly (E)",
+    CurrentValue = false,
+    Flag = "Toggle2", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+    -- Variables
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local flying = (Value)
+local flySpeed = 100
+local bodyVelocity = nil
+local bodyGyro = nil
+
+-- Services
+local userInput = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+
+-- Movement Controls
+local moveDirection = Vector3.zero
+local keysPressed = {}
+
+-- Function to start flying
+local function startFlying()
+    if not flying then
+        flying = true
+
+        -- Create BodyVelocity and BodyGyro for smooth flying
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(1e4, 1e4, 1e4)
+        bodyVelocity.Velocity = Vector3.zero
+        bodyVelocity.P = 1000
+        bodyVelocity.Parent = rootPart
+
+        bodyGyro = Instance.new("BodyGyro")
+        bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+        bodyGyro.CFrame = rootPart.CFrame
+        bodyGyro.P = 3000
+        bodyGyro.Parent = rootPart
+
+        -- Prevent gravity from affecting the character
+        character.Humanoid.PlatformStand = true
+    end
+end
+
+-- Function to stop flying
+local function stopFlying()
+    if flying then
+        flying = false
+
+        -- Remove flight forces
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
+        if bodyGyro then
+            bodyGyro:Destroy()
+            bodyGyro = nil
+        end
+
+        -- Re-enable gravity
+        character.Humanoid.PlatformStand = false
+    end
+end
+
+-- Update fly direction based on keys pressed
+local function updateFlyDirection()
+    if not flying then return end
+
+    -- Calculate move direction from keys pressed
+    local direction = Vector3.zero
+    if keysPressed["W"] then
+        direction += workspace.CurrentCamera.CFrame.LookVector
+    end
+    if keysPressed["S"] then
+        direction -= workspace.CurrentCamera.CFrame.LookVector
+    end
+    if keysPressed["A"] then
+        direction -= workspace.CurrentCamera.CFrame.RightVector
+    end
+    if keysPressed["D"] then
+        direction += workspace.CurrentCamera.CFrame.RightVector
+    end
+    if keysPressed["Space"] then
+        direction += Vector3.new(0, 1, 0)
+    end
+    if keysPressed["LeftShift"] then
+        direction -= Vector3.new(0, 1, 0)
+    end
+
+    -- Normalize and apply speed
+    if direction.Magnitude > 0 then
+        moveDirection = direction.Unit * flySpeed
+    else
+        moveDirection = Vector3.zero
+    end
+end
+
+-- Flight movement loop
+runService.RenderStepped:Connect(function()
+    if flying and bodyVelocity then
+        bodyVelocity.Velocity = moveDirection
+        if bodyGyro then
+            bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+        end
+    end
+end)
+
+-- Input handling
+userInput.InputBegan:Connect(function(input, isProcessed)
+    if isProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.E then
+        if flying then
+            stopFlying()
+        else
+            startFlying()
+        end
+    elseif input.KeyCode == Enum.KeyCode.W then
+        keysPressed["W"] = true
+    elseif input.KeyCode == Enum.KeyCode.S then
+        keysPressed["S"] = true
+    elseif input.KeyCode == Enum.KeyCode.A then
+        keysPressed["A"] = true
+    elseif input.KeyCode == Enum.KeyCode.D then
+        keysPressed["D"] = true
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        keysPressed["Space"] = true
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        keysPressed["LeftShift"] = true
+    end
+
+    updateFlyDirection()
+end)
+
+userInput.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.W then
+        keysPressed["W"] = false
+    elseif input.KeyCode == Enum.KeyCode.S then
+        keysPressed["S"] = false
+    elseif input.KeyCode == Enum.KeyCode.A then
+        keysPressed["A"] = false
+    elseif input.KeyCode == Enum.KeyCode.D then
+        keysPressed["D"] = false
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        keysPressed["Space"] = false
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        keysPressed["LeftShift"] = false
+    end
+
+    updateFlyDirection()
+end)
+
+-- Reset flying if the player respawns
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    rootPart = newCharacter:WaitForChild("HumanoidRootPart")
+    stopFlying()
+end)
+
+    end,
+ })
+
+ local Slider = MainTab:CreateSlider({
+    Name = "Walk speed",
+    Range = {0, 300},
+    Increment = 1,
+    Suffix = "Speed",
+    CurrentValue = 16,
+    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Value)
+    end,
+ })
+
+ local Slider = MainTab:CreateSlider({
+    Name = "Jump Power",
+    Range = {0, 300},
+    Increment = 1,
+    Suffix = "Power",
+    CurrentValue = 50,
+    Flag = "Slider2", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = (Value)
+    end,
+ })
+
+ local AutoFarmTab = Window:CreateTab("Auto Farms", nil) 
+
+ local Button = AutoFarmTab:CreateButton({
+    Name = "Auto Farm",
+    Callback = function()
+        if game.PlaceId == 142823291 then
+            -- [ Services ] --
+            local Players = game:GetService('Players')
+            local CoreGUI = game:GetService('CoreGui')
+            local TweenService = game:GetService('TweenService')
+            local UserInputService = game:GetService("UserInputService")
+            local Highlight = Instance.new('Highlight')
+            local Executor = identifyexecutor()
+            local HIDEUI = get_hidden_gui or gethui
+            local tweenInfoBTP = TweenInfo.new(2.9, Enum.EasingStyle.Linear)
+            getgenv().coinFarm = false
+            
+            -- [ GUI ] --
+            local ScreenGui = Instance.new('ScreenGui')
+            local MainFrame = Instance.new('Frame')
+            local HeaderFrame = Instance.new('Frame')
+            local HeaderFix = Instance.new('Frame')
+            local Description = Instance.new('TextLabel')
+            local GameName = Instance.new('TextLabel')
+            local Icon = Instance.new('ImageLabel')
+            local CloseIcon = Instance.new('ImageButton')
+            local MainButton = Instance.new('TextButton')
+            
+            -- [ Function ] --
+            if syn and typeof(syn) == "table" and RenderWindow then 
+              syn.protect_gui = gethui
+            end
+            local function Hide_UI(gui)
+              if HIDEUI then
+                gui["Parent"] = HIDEUI()
+              elseif (not is_sirhurt_closure) and (syn and syn.protect_gui) then
+                syn.protect_gui(gui)
+                gui["Parent"] = CoreGUI
+              elseif CoreGUI:FindFirstChild('RobloxGui') then
+                gui["Parent"] = CoreGUI.RobloxGui
+              else
+                gui["Parent"] = CoreGUI
+              end
+            end
+            local function MakeDraggable(gui)
+              local dragging
+              local dragInput
+              local dragStart
+              local startPos
+              local function update(input)
+                  local delta = input.Position - dragStart
+                  gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+              end
+              gui.InputBegan:Connect(function(input)
+                  if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                      dragging = true
+                      dragStart = input.Position
+                      startPos = gui.Position
+                      
+                      input.Changed:Connect(function()
+                          if input.UserInputState == Enum.UserInputState.End then
+                              dragging = false
+                          end
+                      end)
+                  end
+              end)
+              gui.InputChanged:Connect(function(input)
+                  if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                      dragInput = input
+                  end
+              end)
+               
+              UserInputService.InputChanged:Connect(function(input)
+                  if input == dragInput and dragging then
+                      update(input)
+                  end
+                end)
+            end
+            local function bypassTP(v)
+              if Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart') then
+                --local cf = CFrame.new(v)
+                local move = TweenService:Create(Players.LocalPlayer.Character.HumanoidRootPart, tweenInfoBTP, {CFrame=v})
+                
+                move:Play()
+              end
+            end
+            function coinFarm()
+              while getgenv().coinFarm == true do
+                local children = game.Workspace:GetChildren()
+                for _,child in pairs(children) do
+                  for _,child in pairs(child:GetChildren()) do
+                    table.insert(children, child)
+                  end
+                  if child:IsA('BasePart') and child.Name == "Coin_Server" then
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = child.CFrame
+                    --bypassTP(child.CFrame)
+                    wait(2.9)
+                  end
+                end
+                wait()
+              end
+            end
+            function sayMessage(message)
+                  game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(message)
+              end
+            
+            -- [ Codes ] --
+            ScreenGui.Name = 'QuantumixHUB'
+            ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            ScreenGui.IgnoreGuiInset = false
+            ScreenGui.ResetOnSpawn = false
+            ScreenGui.Parent = CoreGUI
+            
+            local FrameCorner = Instance.new('UICorner')
+            MainFrame.Name = tostring('QX:'..math.random(999, 999999))
+            MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+            MainFrame.BorderSizePixel = 0
+            MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+            MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+            MainFrame.Size = UDim2.new(0, 250, 0, 150)
+            MainFrame.Parent = ScreenGui
+            MakeDraggable(MainFrame)
+            
+            FrameCorner.Parent = MainFrame
+            FrameCorner.CornerRadius = UDim.new(0, 10)
+            
+            local HeaderCorner = Instance.new('UICorner')
+            HeaderFrame.Name = tostring('HD:'..math.random(999, 999999))
+            HeaderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            HeaderFrame.BorderSizePixel = 0
+            HeaderFrame.Size = UDim2.new(1, 0, 0, 25)
+            HeaderFrame.Parent = MainFrame
+            HeaderFix.Name = "Fixer"
+            HeaderFix.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            HeaderFix.BorderSizePixel = 0
+            HeaderFix.Size = UDim2.new(1, 0, 0, 8)
+            HeaderFix.Position = UDim2.new(0, 0, 0, 18)
+            HeaderFix.Parent = HeaderFrame
+            
+            HeaderCorner.Parent = HeaderFrame
+            HeaderCorner.CornerRadius = UDim.new(0, 10)
+            
+            local IconCorner = Instance.new('UICorner')
+            Icon.Name = "Icon"
+            Icon.BackgroundTransparency = 1
+            Icon.Image = Players:GetUserThumbnailAsync(Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+            Icon.Size = UDim2.new(0, 20, 0, 20)
+            Icon.Position = UDim2.new(0, 5, 0, 2.5)
+            Icon.Parent = HeaderFrame
+            
+            IconCorner.Parent = Icon
+            IconCorner.CornerRadius = UDim.new(0, 50)
+            
+            CloseIcon.Name = "Icon"
+            CloseIcon.BackgroundTransparency = 1
+            CloseIcon.Image = "rbxassetid://14397748477"
+            CloseIcon.Size = UDim2.new(0, 20, 0, 20)
+            CloseIcon.Position = UDim2.new(0, 225, 0, 2)
+            CloseIcon.Parent = HeaderFrame
+            CloseIcon.MouseButton1Click:Connect(function()
+              ScreenGui:Destroy()
+            end)
+            
+            Description.Name = "Description"
+            Description.BackgroundTransparency = 1
+            Description.Text = "MM2 COINFARM (QX)"
+            Description.Size = UDim2.new(1, -4, 0, 0)
+            Description.Position = UDim2.new(0, 4, 0, 55)
+            Description.TextSize = 20
+            Description.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Description.TextXAlignment = Enum.TextXAlignment.Center
+            Description.Font = Enum.Font.Gotham
+            Description.Parent = MainFrame
+            
+            GameName.Name = "GameName"
+            GameName.BackgroundTransparency = 1
+            GameName.Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+            GameName.Size = UDim2.new(1, -4, 0, 0)
+            GameName.Position = UDim2.new(0, 4, 0, 75)
+            GameName.TextSize = 10
+            GameName.TextColor3 = Color3.fromRGB(100, 100, 255)
+            GameName.TextXAlignment = Enum.TextXAlignment.Center
+            GameName.Font = Enum.Font.Gotham
+            GameName.Parent = MainFrame
+            
+            local ButtonCorner = Instance.new('UICorner')
+            MainButton.Name = "Toggle"
+            MainButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            MainButton.BorderSizePixel = 0
+            MainButton.Text = "Working: OFF"
+            MainButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+            MainButton.TextSize = 10
+            MainButton.Font = Enum.Font.Gotham
+            MainButton.Size = UDim2.new(1, -20, 0, 30)
+            MainButton.Position = UDim2.new(0, 10, 0, 110)
+            MainButton.Parent = MainFrame
+            
+            ButtonCorner.Parent = MainButton
+            ButtonCorner.CornerRadius = UDim.new(0, 10)
+            
+            local toggle = false
+            
+            MainButton.MouseButton1Click:Connect(function()
+              toggle = not toggle
+              if toggle then
+                getgenv().coinFarm = true
+                MainButton.Text = "Working: ON"
+                MainButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+                coinFarm()
+              else
+                getgenv().coinFarm = false
+                coinFarm()
+                MainButton.Text = "Working: OFF"
+                MainButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+              end
+            end)
+          end
+          
+    end,
+ })
+
+ local CombatTab = Window:CreateTab("Combat", nil)
+
+ local Button = Tab:CreateButton({
+   Name = "Button Example",
+   Callback = function()
+   -- The function that takes place when the button is pressed
+   end,
+})
